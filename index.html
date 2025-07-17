@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estudio de Dibujo Digital</title>
+  <style>
+    :root {
+      --primary-color: #4a6fa5;
+      --secondary-color: #ff6b6b;
+      --dark-bg: #121212;
+      --light-text: #f8f9fa;
+      --border-radius: 8px;
+      --transition-speed: 0.3s;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--dark-bg);
+      overflow: hidden;
+      height: 100%;
+      font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+    }
+
+    #contenedor {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+    }
+
+    .video-container {
+      flex: 1;
+      position: relative;
+    }
+
+    #video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      background: #000;
+    }
+
+    #sidebar {
+      width: 250px;
+      background: rgba(20, 20, 20, 0.95);
+      overflow-y: auto;
+      padding: 15px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 5;
+    }
+
+    #contenedor:-webkit-full-screen {
+      width: 100%;
+      height: 100%;
+    }
+
+    #contenedor:-moz-full-screen {
+      width: 100%;
+      height: 100%;
+    }
+
+    #contenedor:-ms-fullscreen {
+      width: 100%;
+      height: 100%;
+    }
+
+    #contenedor:fullscreen {
+      width: 100%;
+      height: 100%;
+    }
+
+    .miniatura {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      padding: 8px;
+      text-align: center;
+      color: var(--light-text);
+      font-size: 14px;
+      background: rgba(30, 30, 30, 0.7);
+      border-radius: var(--border-radius);
+      transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .miniatura:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      border-color: var(--primary-color);
+    }
+
+    .miniatura img {
+      width: 100%;
+      border-radius: 4px;
+      cursor: zoom-in;
+    }
+
+    .miniatura .delete-btn {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity var(--transition-speed);
+    }
+
+    .miniatura:hover .delete-btn {
+      opacity: 1;
+    }
+
+    .controls {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  background: rgba(20, 20, 20, 0.7);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all var(--transition-speed);
+  overflow: hidden;
+  width: 50px;
+  height: 50px;
+}
+
+.controls:hover {
+  width: auto;
+  height: auto;
+  background: rgba(20, 20, 20, 0.9);
+}
+
+.controls-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px;
+  width: max-content;
+}
+
+.menu-button {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.controls:hover .menu-button {
+  display: none;
+}
+
+.control-item {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.controls:hover .control-item {
+  opacity: 1;
+  width: auto;
+  height: auto;
+}
+
+button, select {
+      background: rgba(74, 111, 165, 0.8);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: var(--border-radius);
+      transition: all var(--transition-speed);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+button:hover, select:hover {
+      background: rgba(74, 111, 165, 1);
+      transform: translateY(-2px);
+}
+
+button:active {
+      transform: translateY(0);
+}
+
+button.secondary {
+      background: rgba(108, 117, 125, 0.8);
+}
+
+button.secondary:hover {
+      background: rgba(108, 117, 125, 1);
+}
+
+button.danger {
+      background: rgba(220, 53, 69, 0.8);
+}
+
+button.danger:hover {
+      background: rgba(220, 53, 69, 1);
+}
+
+button.success {
+      background: rgba(40, 167, 69, 0.8);
+}
+
+    button.success:hover {
+      background: rgba(40, 167, 69, 1);
+    }
+
+    #logo {
+      position: absolute;
+      bottom: -200px;
+      right: 400px;
+      width: 800px;
+      opacity: 0.8;
+      z-index: 10;
+      filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+    }
+
+    #downloadLink {
+      display: none;
+    }
+
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(40, 167, 69, 0.9);
+      color: white;
+      padding: 12px 24px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 100;
+      opacity: 0;
+      transition: opacity var(--transition-speed);
+    }
+
+    .notification.show {
+      opacity: 1;
+    }
+
+    .recording-indicator {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(220, 53, 69, 0.8);
+      color: white;
+      padding: 8px 16px;
+      border-radius: var(--border-radius);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .recording-indicator::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+
+    .tooltip {
+      position: relative;
+    }
+
+    .tooltip::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition-speed);
+    }
+
+    .tooltip:hover::after {
+      opacity: 1;
+    }
+
+    .modal-expandido {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.96);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-expandido.mostrar {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-expandido img {
+      max-width: 95vw;
+      max-height: 95vh;
+      object-fit: contain;
+      border: 2px solid white;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+      cursor: default;
+    }
+
+    .modal-info {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: white;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      #sidebar {
+        width: 200px;
+      }
+
+      .controls {
+        flex-direction: column;
+        max-width: 200px;
+      }
+
+      button, select {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+      
+      .modal-expandido img {
+        max-width: 98vw;
+        max-height: 98vh;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="contenedor">
+  <div class="video-container">
+    <video id="video" autoplay playsinline muted></video>
+  </div>
+
+  <div id="sidebar">
+    <h3 style="color: white; margin: 0 0 10px 0; text-align: center;">CAPTURAS</h3>
+  </div>
+
+  <!-- Reemplaza el div.controls existente con este: -->
+<div class="controls">
+  <div class="menu-button">☰</div>
+  <div class="controls-container">
+    <div class="control-item">
+      <button id="btnFull" class="tooltip" data-tooltip="Pantalla completa (F11)">
+        <span>⛶</span> Pantalla completa
+      </button>
+    </div>
+    <div class="control-item">
+      <button id="btnPause" class="secondary tooltip" data-tooltip="Pausar/Reanudar cámara (Espacio)">
+        <span>⏸</span> Pausar cámara
+      </button>
+    </div>
+    <div class="control-item">
+      <button id="btnRecord" class="danger tooltip" data-tooltip="Grabar video (Ctrl+R)">
+        <span>●</span> Grabar video
+      </button>
+    </div>
+    <div class="control-item">
+      <button id="btnCapture" class="success tooltip" data-tooltip="Capturar paso (Enter)">
+        <span>📸</span> Capturar paso
+      </button>
+    </div>
+    <div class="control-item">
+      <button id="btnClear" class="danger tooltip" data-tooltip="Borrar todos los pasos">
+        <span>🗑</span> Borrar pasos
+      </button>
+    </div>
+    <div class="control-item">
+      <button id="btnZip" class="tooltip" data-tooltip="Descargar todas las capturas">
+        <span>📁</span> Descargar ZIP
+      </button>
+    </div>
+    <div class="control-item">
+      <select id="cameraSelect" class="tooltip" data-tooltip="Seleccionar cámara"></select>
+    </div>
+    <div class="control-item">
+      <a id="downloadLink">Descargar video</a>
+    </div>
+  </div>
+</div>
+
+  <div class="recording-indicator">
+    Grabando...
+  </div>
+
+  <div class="notification" id="notification">
+    Captura guardada correctamente!
+  </div>
+
+  <img id="logo" src="logo.png" alt="Logo">
+</div>
+
+<!-- Modal para imagen expandida (fuera del contenedor principal) -->
+<div class="modal-expandido" id="modalExpandido">
+  <img id="imagenExpandida" src="" alt="Captura expandida">
+  <div class="modal-info" id="modalInfo"></div>
+</div>
+
+<!-- JSZip para comprimir imágenes -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<!-- FileSaver para descargas más fáciles -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<script>
+  const video = document.getElementById('video');
+  const contenedor = document.getElementById('contenedor');
+  const sidebar = document.getElementById('sidebar');
+  const cameraSelect = document.getElementById('cameraSelect');
+  const btnFull = document.getElementById('btnFull');
+  const btnPause = document.getElementById('btnPause');
+  const btnRecord = document.getElementById('btnRecord');
+  const btnCapture = document.getElementById('btnCapture');
+  const btnClear = document.getElementById('btnClear');
+  const btnZip = document.getElementById('btnZip');
+  const downloadLink = document.getElementById('downloadLink');
+  const notification = document.getElementById('notification');
+  const recordingIndicator = document.querySelector('.recording-indicator');
+  const modalExpandido = document.getElementById('modalExpandido');
+  const imagenExpandida = document.getElementById('imagenExpandida');
+  const modalInfo = document.getElementById('modalInfo');
+
+  let currentStream;
+  let recorder;
+  let recordedChunks = [];
+  let isPaused = false;
+  let isRecording = false;
+  let pasoNumero = 1;
+  const capturas = [];
+
+  // Configuración persistente
+  const appConfig = {
+    cameraDeviceId: null
+  };
+
+  // Cargar configuración al iniciar
+  function loadConfig() {
+    const savedConfig = localStorage.getItem('drawingAppConfig');
+    if (savedConfig) {
+      Object.assign(appConfig, JSON.parse(savedConfig));
+    }
+  }
+
+  // Guardar configuración
+  function saveConfig() {
+    localStorage.setItem('drawingAppConfig', JSON.stringify(appConfig));
+  }
+
+  // Mostrar notificación
+  function showNotification(message, duration = 2000) {
+    notification.textContent = message;
+    notification.classList.add('show');
+    setTimeout(() => {
+      notification.classList.remove('show');
+    }, duration);
+  }
+
+  async function getCameras() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      cameraSelect.innerHTML = '';
+      
+      videoDevices.forEach((device, index) => {
+        const option = document.createElement('option');
+        option.value = device.deviceId;
+        option.text = device.label || `Cámara ${index + 1}`;
+        cameraSelect.appendChild(option);
+        
+        if (device.deviceId === appConfig.cameraDeviceId) {
+          option.selected = true;
+        }
+      });
+      
+      if (!appConfig.cameraDeviceId && videoDevices.length > 0) {
+        appConfig.cameraDeviceId = videoDevices[0].deviceId;
+        saveConfig();
+      }
+    } catch (err) {
+      console.error('Error al enumerar dispositivos:', err);
+      showNotification('Error al acceder a las cámaras', 3000);
+    }
+  }
+
+  async function startCamera(deviceId) {
+    if (currentStream) {
+      currentStream.getTracks().forEach(track => track.stop());
+    }
+    try {
+      const constraints = {
+        video: { 
+          deviceId: deviceId ? { exact: deviceId } : undefined,
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        },
+        audio: false
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      video.srcObject = stream;
+      currentStream = stream;
+      
+      appConfig.cameraDeviceId = deviceId || stream.getVideoTracks()[0].getSettings().deviceId;
+      saveConfig();
+    } catch (err) {
+      console.error('Error al acceder a la cámara:', err);
+      showNotification('Error al acceder a la cámara: ' + err.message, 3000);
+    }
+  }
+
+  // Pantalla completa
+  btnFull.addEventListener('click', () => {
+    const isFullscreen = document.fullscreenElement || 
+                        document.webkitFullscreenElement || 
+                        document.msFullscreenElement;
+    
+    if (!isFullscreen) {
+      if (contenedor.requestFullscreen) {
+        contenedor.requestFullscreen();
+      } else if (contenedor.webkitRequestFullscreen) {
+        contenedor.webkitRequestFullscreen();
+      } else if (contenedor.msRequestFullscreen) {
+        contenedor.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+  });
+
+  // Pausar/Reanudar cámara
+  btnPause.addEventListener('click', toggleCameraPause);
+
+  function toggleCameraPause() {
+    if (!currentStream) return;
+    const track = currentStream.getVideoTracks()[0];
+    if (isPaused) {
+      track.enabled = true;
+      btnPause.innerHTML = '<span>⏸</span> Pausar cámara';
+    } else {
+      track.enabled = false;
+      btnPause.innerHTML = '<span>▶</span> Reanudar cámara';
+    }
+    isPaused = !isPaused;
+  }
+
+  // Grabar video
+  btnRecord.addEventListener('click', toggleRecording);
+
+  function toggleRecording() {
+    if (!currentStream) return;
+    if (!isRecording) {
+      startRecording();
+    } else {
+      stopRecording();
+    }
+  }
+
+  function startRecording() {
+    recordedChunks = [];
+    recorder = new MediaRecorder(currentStream, { mimeType: 'video/webm' });
+    
+    recorder.ondataavailable = e => { 
+      if (e.data.size > 0) recordedChunks.push(e.data); 
+    };
+    
+    recorder.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      downloadLink.href = url;
+      downloadLink.download = `grabacion-dibujo-${new Date().toISOString().slice(0, 10)}.webm`;
+      downloadLink.style.display = 'inline-block';
+      downloadLink.textContent = 'Descargar video';
+      showNotification('Grabación finalizada. Lista para descargar!');
+    };
+    
+    recorder.onerror = (e) => {
+      console.error('Error en la grabación:', e);
+      showNotification('Error en la grabación', 3000);
+    };
+    
+    recorder.start(100);
+    isRecording = true;
+    btnRecord.innerHTML = '<span>■</span> Detener grabación';
+    recordingIndicator.style.display = 'flex';
+    showNotification('Grabación iniciada', 1500);
+  }
+
+  function stopRecording() {
+    if (recorder && recorder.state !== 'inactive') {
+      recorder.stop();
+    }
+    isRecording = false;
+    btnRecord.innerHTML = '<span>●</span> Grabar video';
+    recordingIndicator.style.display = 'none';
+  }
+
+  // Capturar paso
+  btnCapture.addEventListener('click', captureStep);
+
+  function captureStep() {
+    if (!currentStream || isPaused) return;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    const imgData = canvas.toDataURL('image/png');
+    const timestamp = new Date().toLocaleTimeString();
+
+    capturas.push({ 
+      paso: pasoNumero, 
+      data: imgData,
+      timestamp: timestamp
+    });
+
+    const mini = document.createElement('div');
+    mini.classList.add('miniatura');
+    mini.innerHTML = `
+      <strong>Paso ${pasoNumero}</strong>
+      <br>
+      <img src="${imgData}" alt="Paso ${pasoNumero}" data-index="${capturas.length - 1}">
+      <button class="delete-btn" data-index="${capturas.length - 1}">×</button>
+    `;
+    
+    // Evento para expandir la imagen
+    mini.querySelector('img').addEventListener('click', function(e) {
+      e.stopPropagation();
+      const index = parseInt(this.getAttribute('data-index'));
+      expandirImagen(this.src, `Paso ${capturas[index].paso}`);
+    });
+    
+    sidebar.appendChild(mini);
+    mini.scrollIntoView({ behavior: 'smooth' });
+    
+    pasoNumero++;
+    showNotification(`Paso ${pasoNumero - 1} capturado!`);
+  }
+
+  // Función para expandir imagen
+  function expandirImagen(src, info) {
+    // Salir de pantalla completa si está activa
+    const isFullscreen = document.fullscreenElement || 
+                        document.webkitFullscreenElement || 
+                        document.msFullscreenElement;
+    
+    if (isFullscreen) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+    
+    // Mostrar el modal con la imagen
+    imagenExpandida.src = src;
+    modalInfo.textContent = info;
+    modalExpandido.classList.add('mostrar');
+    
+    // Ajustar el tamaño de la imagen después de cargarla
+    imagenExpandida.onload = function() {
+      const imgRatio = this.naturalWidth / this.naturalHeight;
+      const screenRatio = window.innerWidth / window.innerHeight;
+      
+      if (imgRatio > screenRatio) {
+        this.style.width = '95vw';
+        this.style.height = 'auto';
+      } else {
+        this.style.height = '95vh';
+        this.style.width = 'auto';
+      }
+    };
+  }
+
+  // Cerrar modal
+  modalExpandido.addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.classList.remove('mostrar');
+    }
+  });
+
+  // Borrar pasos
+  btnClear.addEventListener('click', () => {
+    if (capturas.length === 0) return;
+    
+    if (confirm('¿Estás seguro de que quieres borrar todos los pasos?')) {
+      sidebar.innerHTML = '<h3 style="color: white; margin: 0 0 10px 0; text-align: center;">CAPTURAS</h3>';
+      capturas.length = 0;
+      pasoNumero = 1;
+      showNotification('Todos los pasos han sido borrados');
+    }
+  });
+
+  // Borrar paso individual
+  sidebar.addEventListener('click', (e) => {
+    if (e.target.classList.contains('delete-btn')) {
+      e.stopPropagation();
+      const index = parseInt(e.target.getAttribute('data-index'));
+      if (!isNaN(index) && index >= 0 && index < capturas.length) {
+        capturas.splice(index, 1);
+        e.target.closest('.miniatura').remove();
+        showNotification('Paso eliminado');
+        
+        // Renumerar los pasos restantes
+        const miniaturas = sidebar.querySelectorAll('.miniatura');
+        miniaturas.forEach((mini, i) => {
+          const strong = mini.querySelector('strong');
+          if (strong) strong.textContent = `Paso ${i + 1}`;
+        });
+        
+        pasoNumero = capturas.length + 1;
+      }
+    }
+  });
+
+  // Descargar ZIP
+  btnZip.addEventListener('click', async () => {
+    if (capturas.length === 0) {
+      showNotification('No hay capturas para descargar', 2000);
+      return;
+    }
+    
+    try {
+      showNotification('Preparando archivo ZIP...', 1500);
+      
+      const zip = new JSZip();
+      const folder = zip.folder('pasos_dibujo');
+      
+      capturas.forEach((c, i) => {
+        const base64 = c.data.split(',')[1];
+        folder.file(`Paso_${i + 1}.png`, base64, { base64: true });
+      });
+      
+      // Añadir README
+      folder.file('LEEME.txt', `Pasos de dibujo capturados\nTotal: ${capturas.length} pasos\nFecha: ${new Date().toLocaleString()}`);
+      
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `pasos_dibujo_${new Date().toISOString().slice(0, 10)}.zip`);
+      showNotification('ZIP descargado correctamente!');
+    } catch (err) {
+      console.error('Error al generar ZIP:', err);
+      showNotification('Error al generar el archivo ZIP', 3000);
+    }
+  });
+
+  // Cambiar cámara
+  cameraSelect.addEventListener('change', () => {
+    startCamera(cameraSelect.value);
+  });
+
+  // Atajos de teclado
+  document.addEventListener('keydown', (e) => {
+    // Evitar atajos cuando se está escribiendo en inputs
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    
+    // Cerrar modal con ESC
+    if (e.key === 'Escape' && modalExpandido.classList.contains('mostrar')) {
+      modalExpandido.classList.remove('mostrar');
+      return;
+    }
+    
+    switch (e.key) {
+      case ' ':
+        e.preventDefault();
+        toggleCameraPause();
+        break;
+      case 'Enter':
+        e.preventDefault();
+        captureStep();
+        break;
+      case 'r':
+      case 'R':
+        if (e.ctrlKey) {
+          e.preventDefault();
+          toggleRecording();
+        }
+        break;
+      case 'F11':
+        e.preventDefault();
+        btnFull.click();
+        break;
+    }
+  });
+
+  // Inicialización
+  (async () => {
+    loadConfig();
+    await getCameras();
+    if (cameraSelect.options.length > 0) {
+      await startCamera(appConfig.cameraDeviceId || cameraSelect.value);
+    }
+  })();
+</script>
+</body>
+</html>
